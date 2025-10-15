@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进制转换器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        select {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 25px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.05em;
+        }
+
+        .result-value {
+            font-family: 'Courier New', monospace;
+            color: #333;
+            font-size: 1.1em;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border-left: 4px solid #c33;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .hint {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔢 进制转换器</h1>
+        <p class="subtitle">支持2进制、8进制、10进制、16进制互转</p>
+        
+        <div class="input-group">
+            <label for="inputBase"><span class="icon">📥</span>输入进制</label>
+            <div class="input-wrapper">
+                <select id="inputBase">
+                    <option value="2">二进制</option>
+                    <option value="8">八进制</option>
+                    <option value="10" selected>十进制</option>
+                    <option value="16">十六进制</option>
+                </select>
+                <input type="text" id="inputValue" placeholder="请输入数值..." />
+            </div>
+            <p class="hint">提示：十六进制可使用 0-9 和 A-F</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="results">
+            <div class="result-item">
+                <span class="result-label">二进制 (BIN)</span>
+                <span class="result-value" id="binary">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">八进制 (OCT)</span>
+                <span class="result-value" id="octal">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">十进制 (DEC)</span>
+                <span class="result-value" id="decimal">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">十六进制 (HEX)</span>
+                <span class="result-value" id="hexadecimal">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputBase = document.getElementById('inputBase');
+        const inputValue = document.getElementById('inputValue');
+        const errorDiv = document.getElementById('error');
+        const binary = document.getElementById('binary');
+        const octal = document.getElementById('octal');
+        const decimal = document.getElementById('decimal');
+        const hexadecimal = document.getElementById('hexadecimal');
+
+        function convert() {
+            const base = parseInt(inputBase.value);
+            const value = inputValue.value.trim().toUpperCase();
+            
+            if (!value) {
+                clearResults();
+                hideError();
+                return;
+            }
+
+            try {
+                // 验证输入
+                const validChars = {
+                    2: /^[01]+$/,
+                    8: /^[0-7]+$/,
+                    10: /^[0-9]+$/,
+                    16: /^[0-9A-F]+$/
+                };
+
+                if (!validChars[base].test(value)) {
+                    throw new Error(`输入不符合${base}进制格式！`);
+                }
+
+                // 转换为十进制
+                const decValue = parseInt(value, base);
+                
+                if (isNaN(decValue)) {
+                    throw new Error('转换失败，请检查输入！');
+                }
+
+                // 转换到各个进制
+                binary.textContent = decValue.toString(2);
+                octal.textContent = decValue.toString(8);
+                decimal.textContent = decValue.toString(10);
+                hexadecimal.textContent = decValue.toString(16).toUpperCase();
+                
+                hideError();
+            } catch (e) {
+                showError(e.message);
+                clearResults();
+            }
+        }
+
+        function clearResults() {
+            binary.textContent = '-';
+            octal.textContent = '-';
+            decimal.textContent = '-';
+            hexadecimal.textContent = '-';
+        }
+
+        function showError(message) {
+            errorDiv.textContent = '⚠️ ' + message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+
+        inputValue.addEventListener('input', convert);
+        inputBase.addEventListener('change', convert);
+    </script>
+</body>
+</html> 
